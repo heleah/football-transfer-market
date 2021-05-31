@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import validatePlayer from './lib/validation';
 import Tags from './Tags';
@@ -15,7 +15,15 @@ export default function PlayerForm({ onAddPlayer }) {
   };
 
   const [player, setPlayer] = useState(initialPlayerState);
+  const [clubs, setClubs] = useState([]);
   const [isError, setIsError] = useState(false);
+
+  useEffect(() => {
+    fetch('http://localhost:4000/clubs')
+      .then((res) => res.json())
+      .then((data) => setClubs(data))
+      .catch((err) => console.error(err));
+  });
 
   function updatePlayer(event) {
     const fieldName = event.target.name;
@@ -57,25 +65,25 @@ export default function PlayerForm({ onAddPlayer }) {
       <Form onSubmit={handleFormSubmit}>
         <H2>Add New Player</H2>
         {isError && <ErrorBox>There is an error in your form.</ErrorBox>}
-        <label htmlFor="name">Player Name</label>
+        <label htmlFor='name'>Player Name</label>
         <input
-          type="text"
-          name="name"
+          type='text'
+          name='name'
           value={player.name}
           onChange={updatePlayer}
         />
-        <label htmlFor="price">Transfer Price (in €)</label>
+        <label htmlFor='price'>Transfer Price (in €)</label>
         <input
-          type="text"
-          name="price"
+          type='text'
+          name='price'
           value={player.price}
           disabled={player.freeTransfer}
           onChange={updatePlayer}
         />
         <label>
           <input
-            type="checkbox"
-            name="freeTransfer"
+            type='checkbox'
+            name='freeTransfer'
             value={player.freeTransfer}
             disabled={player.price !== ''}
             checked={player.freeTransfer}
@@ -83,24 +91,26 @@ export default function PlayerForm({ onAddPlayer }) {
           />
           Free Transfer?
         </label>
-        <label htmlFor="club">Club</label>
-        <select name="club" onChange={updatePlayer} value={player.club}>
-          <option value="">-- Please Select --</option>
-          <option value="fc_bayern">FC Bayern München</option>
-          <option value="fc_koeln">1. FC Köln</option>
-          <option value="vfb_stuttgart">VfB Stuttgart</option>
-          <option value="sv_werder_bremen">SV Werder Bremen</option>
-          <option value="fc_st_pauli">FC St. Pauli</option>
-          <option value="sc_freiburg">SC Freiburg</option>
+        <label htmlFor='club'>Club</label>
+        <select name='club' onChange={updatePlayer} value={player.club}>
+          <option value=''>-- Please Select --</option>
+          {clubs.length > 0 &&
+            clubs.map((club) => {
+              return (
+                <option id={club.id} value={club.name}>
+                  {club.name}
+                </option>
+              );
+            })}
         </select>
         <fieldset>
           <legend>Position</legend>
           <RadioButtons>
             <label>
               <input
-                type="radio"
-                name="position"
-                value="striker"
+                type='radio'
+                name='position'
+                value='striker'
                 checked={player.position === 'striker'}
                 onChange={updatePlayer}
               />
@@ -108,9 +118,9 @@ export default function PlayerForm({ onAddPlayer }) {
             </label>
             <label>
               <input
-                type="radio"
-                name="position"
-                value="midfield"
+                type='radio'
+                name='position'
+                value='midfield'
                 checked={player.position === 'midfield'}
                 onChange={updatePlayer}
               />
@@ -118,9 +128,9 @@ export default function PlayerForm({ onAddPlayer }) {
             </label>
             <label>
               <input
-                type="radio"
-                name="position"
-                value="defence"
+                type='radio'
+                name='position'
+                value='defence'
                 checked={player.position === 'defence'}
                 onChange={updatePlayer}
               />
@@ -128,9 +138,9 @@ export default function PlayerForm({ onAddPlayer }) {
             </label>
             <label>
               <input
-                type="radio"
-                name="position"
-                value="goalie"
+                type='radio'
+                name='position'
+                value='goalie'
                 checked={player.position === 'goalie'}
                 onChange={updatePlayer}
               />
@@ -143,18 +153,18 @@ export default function PlayerForm({ onAddPlayer }) {
           onUpdateTags={updateSkills}
           handleRemoveTag={removeSkill}
         />
-        <label htmlFor="email">Contact (Email)</label>
+        <label htmlFor='email'>Contact (Email)</label>
         <input
-          type="email"
-          name="email"
+          type='email'
+          name='email'
           value={player.email}
           onChange={updatePlayer}
         />
         <Buttons>
-          <Button type="reset" onClick={() => setPlayer(initialPlayerState)}>
+          <Button type='reset' onClick={() => setPlayer(initialPlayerState)}>
             Cancel
           </Button>
-          <Button type="submit" isAdd>
+          <Button type='submit' isAdd>
             Add
           </Button>
         </Buttons>

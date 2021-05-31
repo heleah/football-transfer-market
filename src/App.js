@@ -21,8 +21,30 @@ function App() {
     saveToLocal('Players in Cart', transferCart);
   }, [transferCart]);
 
+  useEffect(() => {
+    fetch('http://localhost:4000/players')
+      .then((res) => res.json())
+      .then((apiPlayers) => setPlayers(apiPlayers))
+      .catch((err) => console.error(err));
+  }, []);
+
   function addPlayer(player) {
-    setPlayers([...players, player]);
+    fetch('http://localhost:4000/players', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: player.name,
+        price: player.price,
+        isFree: player.freeTransfer,
+        club: player.club,
+        position: player.position,
+        skills: player.skills,
+        email: player.email,
+      }),
+    })
+      .then((res) => res.json())
+      .then((player) => setPlayers([...players, player]))
+      .catch((err) => console.error(err));
   }
 
   function addToTransferCart(player) {
@@ -32,10 +54,10 @@ function App() {
   return (
     <div>
       <header>
-        <NavLinkItems exact to="/">
+        <NavLinkItems exact to='/'>
           <H1>Football Transfer Market</H1>
         </NavLinkItems>
-        <NavLinkItems to="/cart">
+        <NavLinkItems to='/cart'>
           <CartHeadline>
             <Emoji>💸 </Emoji>Cart: {transferCart.length} item(s)
           </CartHeadline>
@@ -43,7 +65,7 @@ function App() {
       </header>
 
       <Switch>
-        <Route exact path="/">
+        <Route exact path='/'>
           <Grid>
             <PlayerForm onAddPlayer={addPlayer} />
             <PlayerWrapper>
@@ -60,7 +82,7 @@ function App() {
             </PlayerWrapper>
           </Grid>
         </Route>
-        <Route path="/cart">
+        <Route path='/cart'>
           <TransferCart transferredPlayers={transferCart} />
         </Route>
       </Switch>
