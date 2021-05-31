@@ -1,6 +1,11 @@
 import styled from 'styled-components';
 
-export default function PlayerCard({ player, onAddToCart }) {
+export default function PlayerCard({
+  player,
+  onAddToCart,
+  onEditPlayer,
+  onDeletePlayer,
+}) {
   return (
     <Card>
       <BuyButton onClick={() => onAddToCart(player)}>💸</BuyButton>
@@ -20,6 +25,8 @@ export default function PlayerCard({ player, onAddToCart }) {
       <p>
         <a href={`mailto: ${player.email}`}>{player.email}</a>
       </p>
+      <button onClick={() => onEditPlayer(player)}>Edit Player</button>
+      <button onClick={() => onDeletePlayer(player)}>Delete Player</button>
     </Card>
   );
 }

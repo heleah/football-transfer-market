@@ -9,6 +9,7 @@ import TransferCart from './TransferCart';
 
 function App() {
   const [players, setPlayers] = useState(loadFromLocal('Players') ?? []);
+  const [playerToEdit, setPlayerToEdit] = useState(null);
   const [transferCart, setTransferCart] = useState(
     loadFromLocal('Players in Cart') ?? []
   );
@@ -21,6 +22,10 @@ function App() {
     saveToLocal('Players in Cart', transferCart);
   }, [transferCart]);
 
+  function editPlayer(player) {
+    setPlayerToEdit(player);
+  }
+
   useEffect(() => {
     fetch('http://localhost:4000/players')
       .then((res) => res.json())
@@ -32,15 +37,7 @@ function App() {
     fetch('http://localhost:4000/players', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: player.name,
-        price: player.price,
-        isFree: player.freeTransfer,
-        club: player.club,
-        position: player.position,
-        skills: player.skills,
-        email: player.email,
-      }),
+      body: JSON.stringify(player),
     })
       .then((res) => res.json())
       .then((player) => setPlayers([...players, player]))
@@ -49,6 +46,41 @@ function App() {
 
   function addToTransferCart(player) {
     setTransferCart([...transferCart, player]);
+  }
+
+  function updateAndSavePlayer(playerToSaveAndUpdate) {
+    const upToDatePlayers = players.filter(
+      (player) => player._id !== playerToSaveAndUpdate._id
+    );
+    fetch('http://localhost:4000/players/' + playerToSaveAndUpdate._id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(playerToSaveAndUpdate),
+    })
+      .then((res) => res.json())
+      .then((updatedPlayer) => {
+        setPlayers([...upToDatePlayers, updatedPlayer]);
+        setPlayerToEdit(null);
+      })
+      .catch((err) => console.error(err));
+  }
+
+  function deletePlayer(playerToDelete) {
+    fetch('http://localhost:4000/players/' + playerToDelete._id, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    })
+      .then((res) => res.json())
+      .then((response) => {
+        if (response.data && response.data._id) {
+          const playersToKeep = players.filter(
+            (player) => player._id !== response.data._id
+          );
+          setPlayers(playersToKeep);
+        } else {
+          console.log('Player not found or already deleted.');
+        }
+      });
   }
 
   return (
@@ -67,7 +99,11 @@ function App() {
       <Switch>
         <Route exact path='/'>
           <Grid>
-            <PlayerForm onAddPlayer={addPlayer} />
+            <PlayerForm
+              onAddPlayer={addPlayer}
+              playerToEdit={playerToEdit}
+              onUpdateAndSavePlayer={updateAndSavePlayer}
+            />
             <PlayerWrapper>
               <H2>Current Players</H2>
               <PlayerContainer>
@@ -76,6 +112,8 @@ function App() {
                     key={player.name + index}
                     player={player}
                     onAddToCart={addToTransferCart}
+                    onEditPlayer={editPlayer}
+                    onDeletePlayer={deletePlayer}
                   />
                 ))}
               </PlayerContainer>

@@ -3,7 +3,11 @@ import styled from 'styled-components';
 import validatePlayer from './lib/validation';
 import Tags from './Tags';
 
-export default function PlayerForm({ onAddPlayer }) {
+export default function PlayerForm({
+  onAddPlayer,
+  playerToEdit,
+  onUpdateAndSavePlayer,
+}) {
   const initialPlayerState = {
     name: '',
     price: '',
@@ -14,7 +18,9 @@ export default function PlayerForm({ onAddPlayer }) {
     email: '',
   };
 
-  const [player, setPlayer] = useState(initialPlayerState);
+  const [player, setPlayer] = useState(
+    playerToEdit ? playerToEdit : initialPlayerState
+  );
   const [clubs, setClubs] = useState([]);
   const [isError, setIsError] = useState(false);
 
@@ -24,6 +30,12 @@ export default function PlayerForm({ onAddPlayer }) {
       .then((data) => setClubs(data))
       .catch((err) => console.error(err));
   });
+
+  useEffect(() => {
+    if (playerToEdit) {
+      setPlayer(playerToEdit);
+    }
+  }, [playerToEdit]);
 
   function updatePlayer(event) {
     const fieldName = event.target.name;
@@ -40,7 +52,7 @@ export default function PlayerForm({ onAddPlayer }) {
   function handleFormSubmit(event) {
     event.preventDefault();
     if (validatePlayer(player)) {
-      onAddPlayer(player);
+      playerToEdit ? onUpdateAndSavePlayer(player) : onAddPlayer(player);
       setPlayer(initialPlayerState);
       setIsError(false);
     } else {
@@ -63,7 +75,7 @@ export default function PlayerForm({ onAddPlayer }) {
   return (
     <FormWrapper>
       <Form onSubmit={handleFormSubmit}>
-        <H2>Add New Player</H2>
+        <H2>{playerToEdit ? 'Edit ' : 'Add New '}Player</H2>
         {isError && <ErrorBox>There is an error in your form.</ErrorBox>}
         <label htmlFor='name'>Player Name</label>
         <input
@@ -165,7 +177,7 @@ export default function PlayerForm({ onAddPlayer }) {
             Cancel
           </Button>
           <Button type='submit' isAdd>
-            Add
+            {playerToEdit ? 'Edit' : 'Add'}
           </Button>
         </Buttons>
       </Form>
